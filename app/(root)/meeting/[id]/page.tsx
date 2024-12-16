@@ -1,21 +1,24 @@
-"use client"
+'use client';
 
-import Alert from '@/components/Alert'
-import Loader from '@/components/Loader'
-import MeetingRoom from '@/components/MeetingRoom'
-import MeetingSetup from '@/components/MeetingSetup'
-import { useGateCallById } from '@/hooks/useGetCallById'
-import { useUser } from '@clerk/nextjs'
-import { StreamCall, StreamTheme } from '@stream-io/video-react-sdk'
-import { useState } from 'react'
+import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { StreamCall, StreamTheme } from '@stream-io/video-react-sdk';
+import { useParams } from 'next/navigation';
+import { Loader } from 'lucide-react';
 
 
-const Meeting = ( {params : {id}} : { params : { id : string}}) => {
-  const {user, isLoaded}=useUser()
-  const [isSetUpComplete,setIsSetUpComplete]=useState(false)
-  const {call, isCallingLoading}=useGateCallById(id)
+import Alert from '@/components/Alert';
+import MeetingSetup from '@/components/MeetingSetup';
+import MeetingRoom from '@/components/MeetingRoom';
+import { useGateCallById } from '@/hooks/useGetCallById';
 
-  if(!isLoaded || isCallingLoading) return <Loader/>
+const MeetingPage = () => {
+  const { id } = useParams();
+  const { isLoaded, user } = useUser();
+  const { call, isCallingLoading } = useGateCallById(id);
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+
+  if (!isLoaded || isCallingLoading) return <Loader />;
 
   if (!call) return (
     <p className="text-center text-3xl font-bold text-white">
@@ -29,20 +32,19 @@ const Meeting = ( {params : {id}} : { params : { id : string}}) => {
   if (notAllowed) return <Alert title="You are not allowed to join this meeting" />;
 
   return (
-    <main className='h-screen w-full'>
+    <main className="h-screen w-full">
       <StreamCall call={call}>
         <StreamTheme>
-          { !isSetUpComplete ? (
-            <MeetingSetup setIsSetUpComplete={setIsSetUpComplete}/>
-          ) : (
-             <MeetingRoom/>
-          )
 
-          }
+        {!isSetupComplete ? (
+          <MeetingSetup setIsSetupComplete={setIsSetupComplete} />
+        ) : (
+          <MeetingRoom />
+        )}
         </StreamTheme>
       </StreamCall>
     </main>
-  )
-}
+  );
+};
 
-export default Meeting
+export default MeetingPage;
